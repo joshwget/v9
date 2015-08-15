@@ -3,6 +3,18 @@
 
 /[_a-zA-Z][a-zA-Z0-9_]*/ { lval.s = yylex.Text(); return ID }
 
+"=="  { return COMP_EQU; }
+"!="  { return COMP_NEQU; }
+"<"   { return COMP_LESS; }
+"<="  { return COMP_LTE; }
+">"   { return COMP_GTR; }
+">="  { return COMP_GTE; }
+"===" { return COMP_SEQU; }
+"!==" { return COMP_SNEQU; }
+
+"&&" { return BOOL_AND; }
+"||" { return BOOL_OR; }
+
 /[ \t\n]/  { /* Skip blanks and tabs. */ }
 /[0-9]*/ { lval.s = yylex.Text(); return NUM }
 /./ { return int(yylex.Text()[0]) }
