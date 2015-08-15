@@ -11,7 +11,7 @@ type constant struct {
 }
 
 func IntConstant(i int) *constant {
-  v := &variable{ i }
+  v := &variable{ I: i }
   return &constant { v }
 }
 
@@ -38,7 +38,7 @@ type var_usage struct {
 }
 
 func (n constant) Interpret() *variable {
-  return &variable{ n.val.I }
+  return &variable{ I: n.val.I }
 }
 
 func (n constant) AddChild(in node) { }
@@ -48,15 +48,15 @@ func (n math2) Interpret() *variable {
   right := n.right.Interpret()
   switch(n.operator) {
     case '+':
-      return &variable{ left.I + right.I }
+      return &variable{ I: left.I + right.I }
     case '-':
-      return &variable{ left.I - right.I }
+      return &variable{ I: left.I - right.I }
     case '*':
-      return &variable{ left.I * right.I }
+      return &variable{ I: left.I * right.I }
     case '/':
-      return &variable{ left.I / right.I }
+      return &variable{ I: left.I / right.I }
     default:
-      return &variable{ left.I + right.I }
+      return &variable{ I: left.I + right.I }
   }
 }
 
