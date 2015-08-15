@@ -1,5 +1,6 @@
 package main
 import "fmt"
+import "strconv"
 
 type node interface {
   Interpret() *variable
@@ -11,7 +12,20 @@ type constant struct {
 }
 
 func IntConstant(i int) *constant {
-  v := &variable{ I: i }
+  v := new(variable)
+  v.SetNumberValue(i)
+  return &constant { v }
+}
+
+func TrueConstant() *constant {
+  v := new(variable)
+  v.SetBoolValue(true)
+  return &constant { v }
+}
+
+func FalseConstant() *constant {
+  v := new(variable)
+  v.SetBoolValue(false)
   return &constant { v }
 }
 
@@ -23,6 +37,25 @@ func BoolCast(v *variable) bool {
       return v.B;
     default:
       return false;
+  }
+}
+
+func StringCast(v *variable) string {
+  if v == nil {
+    return "undefined";
+  }
+
+  switch v.Type {
+    case 0:
+      return strconv.Itoa(v.I);
+    case 1:
+      if v.B {
+        return "true"
+      } else {
+        return "false"
+      }
+    default:
+      return "bad type";
   }
 }
 
@@ -59,7 +92,7 @@ type while_node struct {
 }
 
 func (n constant) Interpret() *variable {
-  return &variable{ I: n.val.I }
+  return n.val
 }
 
 func (n constant) AddChild(in node) { }

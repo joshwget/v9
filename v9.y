@@ -39,6 +39,8 @@ var vars map[string]*variable
 %token ID
 %token IF
 %token WHILE
+%token TRUE
+%token FALSE
 
 %token COMP_EQU;
 %token COMP_NEQU;
@@ -87,6 +89,8 @@ var_assign: ID '=' exp {
 ;
 
 exp: NUM         { i, _ := strconv.Atoi($1.s); $$.n = IntConstant(i); }
+   | TRUE  { $$.n = TrueConstant() }
+   | FALSE { $$.n = FalseConstant() }
    | exp '+' exp { $$.n = &operation2{ $1.n, $3.n, '+' }; }
    | exp '-' exp { $$.n = &operation2{ $1.n, $3.n, '-' }; }
    | exp '*' exp { $$.n = &operation2{ $1.n, $3.n, '*' }; }
