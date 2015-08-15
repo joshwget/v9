@@ -1,31 +1,6 @@
 %{
 package main
 import "strconv"
-
-type variable struct {
-  Type int
-  N float32
-  B bool
-  F node
-}
-
-func (v *variable) SetNumberValue(n float32) {
-  v.N = n;
-  v.Type = 0;
-}
-
-func (v *variable) SetBoolValue(b bool) {
-  v.B = b;
-  v.Type = 1;
-}
-
-func (v *variable) SetFunctionValue(function_node node) {
-  v.F = function_node;
-  v.Type = 2;
-}
-
-var vars map[string]*variable
-
 %}
 
 %union {
@@ -79,6 +54,7 @@ statement: exp ';'     { $$ = $1; }
          | command ';' { $$ = $1; }
          | var_declare ';' { $$ = $1; }
          | var_assign ';' { $$ = $1 }
+         | prop_assign ';' { $$ = $1 }
          | if_statement { $$ = $1 }
          | while_statement { $$ = $1 }
 ;
@@ -97,9 +73,15 @@ var_assign: ID '=' exp {
             }
 ;
 
+prop_assign: ID '.' ID '=' exp {
+               $$.n = &set_prop{ vars[$1.s], $3.s, $5.n };
+             }
+;
+
 exp: NUM         { i, _ := strconv.ParseFloat($1.s, 32); $$.n = NumberConstant(float32(i)); }
    | TRUE  { $$.n = TrueConstant() }
    | FALSE { $$.n = FalseConstant() }
+   | '{' '}' { $$.n = MakeEmptyObject() }
    | exp '+' exp { $$.n = &operation2{ $1.n, $3.n, '+' }; }
    | exp '-' exp { $$.n = &operation2{ $1.n, $3.n, '-' }; }
    | exp '*' exp { $$.n = &operation2{ $1.n, $3.n, '*' }; }
@@ -121,6 +103,7 @@ exp: NUM         { i, _ := strconv.ParseFloat($1.s, 32); $$.n = NumberConstant(f
    | ID { $$.n = &var_usage{ vars[$1.s] }; }
    | FUNCTION '(' ')' '{' statement_list '}' { $$.n = &function_declare{ $5.n } }
    | ID '(' ')' { $$.n = &function_call{ vars[$1.s] } }
+   | ID '.' ID { $$.n = &get_prop{ vars[$1.s], $3.s }}
 ;
 
 command: PRINT '(' exp ')' { $$.n = &print{ $3.n } }

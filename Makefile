@@ -1,5 +1,5 @@
-v9: v9.nn.go y.go ast.go
-	go build -o v9 y.go v9.nn.go ast.go
+v9: v9.nn.go y.go ast.go variable.go
+	go build -o v9 y.go v9.nn.go ast.go variable.go
 
 y.go: v9.y v9.nn.go
 	go tool yacc v9.y

@@ -1,6 +1,5 @@
 package main
 import "fmt"
-import "strconv"
 
 type node interface {
   Interpret() *variable
@@ -9,54 +8,6 @@ type node interface {
 
 type constant struct {
   val *variable
-}
-
-func NumberConstant(n float32) *constant {
-  v := new(variable)
-  v.SetNumberValue(n)
-  return &constant { v }
-}
-
-func TrueConstant() *constant {
-  v := new(variable)
-  v.SetBoolValue(true)
-  return &constant { v }
-}
-
-func FalseConstant() *constant {
-  v := new(variable)
-  v.SetBoolValue(false)
-  return &constant { v }
-}
-
-func BoolCast(v *variable) bool {
-  switch v.Type {
-    case 0:
-      return v.N != 0;
-    case 1:
-      return v.B;
-    default:
-      return false;
-  }
-}
-
-func StringCast(v *variable) string {
-  if v == nil {
-    return "undefined";
-  }
-
-  switch v.Type {
-    case 0:
-      return strconv.FormatFloat(float64(v.N), 'f', -1, 32);
-    case 1:
-      if v.B {
-        return "true"
-      } else {
-        return "false"
-      }
-    default:
-      return "bad type";
-  }
 }
 
 type operation2 struct {
@@ -97,6 +48,17 @@ type function_declare struct {
 
 type function_call struct {
   function_node *variable
+}
+
+type set_prop struct {
+  obj *variable
+  prop string
+  in node
+}
+
+type get_prop struct {
+  obj *variable
+  prop string
 }
 
 func (n constant) Interpret() *variable {
@@ -175,7 +137,10 @@ func (n *assign) Interpret() *variable {
       n.left.SetBoolValue(right.B)
     case 2:
       n.left.SetFunctionValue(right.F)
-      fmt.Println("ddd")
+    case 3:
+      n.left.SetReferenceValue(right)
+    case 4:
+      n.left.SetReferenceValue(right.R)
   }
   return n.left
 }
@@ -222,3 +187,17 @@ func (n *function_call) Interpret() *variable {
 }
 
 func (n function_call) AddChild(in node) { }
+
+func (n *set_prop) Interpret() *variable {
+  val := n.in.Interpret()
+  n.obj.SetProp(n.prop, val)
+  return nil
+}
+
+func (n set_prop) AddChild(in node) { }
+
+func (n *get_prop) Interpret() *variable {
+  return n.obj.GetProp(n.prop)
+}
+
+func (n get_prop) AddChild(in node) { }
