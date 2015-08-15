@@ -15,6 +15,17 @@ func IntConstant(i int) *constant {
   return &constant { v }
 }
 
+func BoolCast(v *variable) bool {
+  switch v.Type {
+    case 0:
+      return v.I != 0;
+    case 1:
+      return v.B;
+    default:
+      return false;
+  }
+}
+
 type operation2 struct {
   left, right node
   operator int
@@ -35,6 +46,16 @@ type assign struct {
 
 type var_usage struct {
   in *variable
+}
+
+type if_node struct {
+  cond node
+  body node
+}
+
+type while_node struct {
+  cond node
+  body node
 }
 
 func (n constant) Interpret() *variable {
@@ -128,3 +149,23 @@ func (n *var_usage) Interpret() *variable {
 }
 
 func (n var_usage) AddChild(in node) { }
+
+func (n *if_node) Interpret() *variable {
+  cond := n.cond.Interpret()
+  if BoolCast(cond) {
+    n.body.Interpret()
+  }
+  return nil
+}
+
+func (n if_node) AddChild(in node) { }
+
+func (n *while_node) Interpret() *variable {
+  cond := n.cond.Interpret()
+  for BoolCast(cond) {
+    n.body.Interpret()
+  }
+  return nil
+}
+
+func (n while_node) AddChild(in node) { }

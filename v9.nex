@@ -1,5 +1,7 @@
 /console.log/ { return PRINT; }
 /var/ { return VAR; }
+/if/ { return IF; }
+/while/ { return WHILE; }
 
 /[_a-zA-Z][a-zA-Z0-9_]*/ { lval.s = yylex.Text(); return ID }
 

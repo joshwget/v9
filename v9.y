@@ -37,6 +37,8 @@ var vars map[string]*variable
 %token VAR
 %token PRINT
 %token ID
+%token IF
+%token WHILE
 
 %token COMP_EQU;
 %token COMP_NEQU;
@@ -67,6 +69,9 @@ statement_list: { $$.n = &block{ make([]node, 0) }; }
 statement: exp ';'     { $$ = $1; }
          | command ';' { $$ = $1; }
          | var_declare ';' { $$ = $1; }
+         | var_assign ';' { $$ = $1 }
+         | if_statement { $$ = $1 }
+         | while_statement { $$ = $1 }
 ;
 
 var_declare: VAR ID '=' exp {
@@ -74,6 +79,11 @@ var_declare: VAR ID '=' exp {
                vars[$2.s] = new(variable)
                $$.n = &assign{ vars[$2.s], $4.n };
              }
+;
+
+var_assign: ID '=' exp {
+              $$.n = &assign{ vars[$1.s], $3.n };
+            }
 ;
 
 exp: NUM         { i, _ := strconv.Atoi($1.s); $$.n = IntConstant(i); }
@@ -100,4 +110,8 @@ exp: NUM         { i, _ := strconv.Atoi($1.s); $$.n = IntConstant(i); }
 
 command: PRINT '(' exp ')' { $$.n = &print{ $3.n } }
 ;
+
+if_statement: IF '(' exp ')' '{' statement_list '}' { $$.n = &if_node{ $3.n, $6.n } }
+while_statement: WHILE '(' exp ')' '{' statement_list '}' { $$.n = &while_node{ $3.n, $6.n } }
+
 %%
