@@ -141,6 +141,8 @@ func (n *assign) Interpret() *variable {
       n.left.SetReferenceValue(right)
     case 4:
       n.left.SetReferenceValue(right.R)
+    case 5:
+      n.left.SetStringValue(right.S)
   }
   return n.left
 }

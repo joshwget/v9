@@ -8,6 +8,7 @@ type variable struct {
   F node
   O map[string]*variable
   R *variable
+  S string
 }
 
 func (v *variable) SetNumberValue(n float32) {
@@ -28,6 +29,11 @@ func (v *variable) SetFunctionValue(function_node node) {
 func (v *variable) SetReferenceValue(other *variable) {
   v.R = other;
   v.Type = 4;
+}
+
+func (v *variable) SetStringValue(s string) {
+  v.S = s;
+  v.Type = 5;
 }
 
 func MakeEmptyObject() *constant {
@@ -85,12 +91,20 @@ func FalseConstant() *constant {
   return &constant { v }
 }
 
+func StringConstant(s string) *constant {
+  v := new(variable)
+  v.SetStringValue(s)
+  return &constant { v }
+}
+
 func BoolCast(v *variable) bool {
   switch v.Type {
     case 0:
       return v.N != 0;
     case 1:
       return v.B;
+    case 5:
+      return v.S != ""
     default:
       return false;
   }
@@ -110,6 +124,8 @@ func StringCast(v *variable) string {
       } else {
         return "false"
       }
+    case 5:
+      return v.S
     default:
       return "bad type";
   }

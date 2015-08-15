@@ -7,6 +7,7 @@
 /function/ { return FUNCTION; }
 
 /[_a-zA-Z][a-zA-Z0-9_]*/ { lval.s = yylex.Text(); return ID }
+/'(\\.|[^\\']+)*'|\"(\\.|[^\\"]+)*\"/ { lval.s = yylex.Text(); return STRING }
 
 "=="  { return COMP_EQU; }
 "!="  { return COMP_NEQU; }

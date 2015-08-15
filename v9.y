@@ -23,6 +23,7 @@ import "strconv"
 %token TRUE
 %token FALSE
 %token FUNCTION
+%token STRING
 
 %token COMP_EQU;
 %token COMP_NEQU;
@@ -81,6 +82,7 @@ prop_assign: ID '.' ID '=' exp {
 exp: NUM         { i, _ := strconv.ParseFloat($1.s, 32); $$.n = NumberConstant(float32(i)); }
    | TRUE  { $$.n = TrueConstant() }
    | FALSE { $$.n = FalseConstant() }
+   | STRING { $$.n = StringConstant($1.s[1:len($1.s) - 1]) }
    | '{' '}' { $$.n = MakeEmptyObject() }
    | exp '+' exp { $$.n = &operation2{ $1.n, $3.n, '+' }; }
    | exp '-' exp { $$.n = &operation2{ $1.n, $3.n, '-' }; }
