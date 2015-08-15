@@ -4,6 +4,7 @@
 /while/ { return WHILE; }
 /true/ { return TRUE; }
 /false/ { return FALSE; }
+/function/ { return FUNCTION; }
 
 /[_a-zA-Z][a-zA-Z0-9_]*/ { lval.s = yylex.Text(); return ID }
 

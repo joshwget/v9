@@ -6,6 +6,7 @@ type variable struct {
   Type int
   N float32
   B bool
+  F node
 }
 
 func (v *variable) SetNumberValue(n float32) {
@@ -16,6 +17,11 @@ func (v *variable) SetNumberValue(n float32) {
 func (v *variable) SetBoolValue(b bool) {
   v.B = b;
   v.Type = 1;
+}
+
+func (v *variable) SetFunctionValue(function_node node) {
+  v.F = function_node;
+  v.Type = 2;
 }
 
 var vars map[string]*variable
@@ -41,6 +47,7 @@ var vars map[string]*variable
 %token WHILE
 %token TRUE
 %token FALSE
+%token FUNCTION
 
 %token COMP_EQU;
 %token COMP_NEQU;
@@ -77,7 +84,9 @@ statement: exp ';'     { $$ = $1; }
 ;
 
 var_declare: VAR ID '=' exp {
-               vars = make(map[string]*variable)
+               if vars == nil {
+                 vars = make(map[string]*variable)
+               }
                vars[$2.s] = new(variable)
                $$.n = &assign{ vars[$2.s], $4.n };
              }
@@ -110,6 +119,8 @@ exp: NUM         { i, _ := strconv.ParseFloat($1.s, 32); $$.n = NumberConstant(f
 
    | '(' exp ')' { $$ = $2; }
    | ID { $$.n = &var_usage{ vars[$1.s] }; }
+   | FUNCTION '(' ')' '{' statement_list '}' { $$.n = &function_declare{ $5.n } }
+   | ID '(' ')' { $$.n = &function_call{ vars[$1.s] } }
 ;
 
 command: PRINT '(' exp ')' { $$.n = &print{ $3.n } }

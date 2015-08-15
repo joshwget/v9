@@ -91,6 +91,14 @@ type while_node struct {
   body node
 }
 
+type function_declare struct {
+  body node
+}
+
+type function_call struct {
+  function_node *variable
+}
+
 func (n constant) Interpret() *variable {
   return n.val
 }
@@ -160,7 +168,15 @@ func (n *block) AddChild(in node) {
 
 func (n *assign) Interpret() *variable {
   right := n.right.Interpret()
-  n.left.N = right.N
+  switch right.Type {
+    case 0:
+      n.left.SetNumberValue(right.N)
+    case 1:
+      n.left.SetBoolValue(right.B)
+    case 2:
+      n.left.SetFunctionValue(right.F)
+      fmt.Println("ddd")
+  }
   return n.left
 }
 
@@ -191,3 +207,18 @@ func (n *while_node) Interpret() *variable {
 }
 
 func (n while_node) AddChild(in node) { }
+
+func (n *function_declare) Interpret() *variable {
+  out := new(variable)
+  out.SetFunctionValue(n.body)
+  return out
+}
+
+func (n function_declare) AddChild(in node) { }
+
+func (n *function_call) Interpret() *variable {
+  n.function_node.F.Interpret()
+  return nil
+}
+
+func (n function_call) AddChild(in node) { }
