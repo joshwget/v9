@@ -105,7 +105,8 @@ exp: NUM         { i, _ := strconv.ParseFloat($1.s, 32); $$.n = NumberConstant(f
    | ID { $$.n = &var_usage{ vars[$1.s] }; }
    | FUNCTION '(' ')' '{' statement_list '}' { $$.n = &function_declare{ $5.n } }
    | ID '(' ')' { $$.n = &function_call{ vars[$1.s] } }
-   | ID '.' ID { $$.n = &get_prop{ vars[$1.s], $3.s }}
+   | ID '.' ID { $$.n = &get_prop{ obj: vars[$1.s], string_prop: $3.s } }
+   | ID '[' exp ']' { $$.n = &get_prop{ obj: vars[$1.s], node_prop: $3.n } }
 ;
 
 command: PRINT '(' exp ')' { $$.n = &print{ $3.n } }

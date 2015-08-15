@@ -58,7 +58,8 @@ type set_prop struct {
 
 type get_prop struct {
   obj *variable
-  prop string
+  string_prop string
+  node_prop node
 }
 
 func (n constant) Interpret() *variable {
@@ -199,7 +200,11 @@ func (n *set_prop) Interpret() *variable {
 func (n set_prop) AddChild(in node) { }
 
 func (n *get_prop) Interpret() *variable {
-  return n.obj.GetProp(n.prop)
+  if n.node_prop == nil {
+    return n.obj.GetProp(n.string_prop)
+  } else {
+    return n.obj.GetProp(StringCast(n.node_prop.Interpret()))
+  }
 }
 
 func (n get_prop) AddChild(in node) { }
