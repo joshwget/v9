@@ -4,12 +4,12 @@ import "strconv"
 
 type variable struct {
   Type int
-  I int
+  N float32
   B bool
 }
 
-func (v *variable) SetNumberValue(i int) {
-  v.I = i;
+func (v *variable) SetNumberValue(n float32) {
+  v.N = n;
   v.Type = 0;
 }
 
@@ -88,7 +88,7 @@ var_assign: ID '=' exp {
             }
 ;
 
-exp: NUM         { i, _ := strconv.Atoi($1.s); $$.n = IntConstant(i); }
+exp: NUM         { i, _ := strconv.ParseFloat($1.s, 32); $$.n = NumberConstant(float32(i)); }
    | TRUE  { $$.n = TrueConstant() }
    | FALSE { $$.n = FalseConstant() }
    | exp '+' exp { $$.n = &operation2{ $1.n, $3.n, '+' }; }

@@ -11,9 +11,9 @@ type constant struct {
   val *variable
 }
 
-func IntConstant(i int) *constant {
+func NumberConstant(n float32) *constant {
   v := new(variable)
-  v.SetNumberValue(i)
+  v.SetNumberValue(n)
   return &constant { v }
 }
 
@@ -32,7 +32,7 @@ func FalseConstant() *constant {
 func BoolCast(v *variable) bool {
   switch v.Type {
     case 0:
-      return v.I != 0;
+      return v.N != 0;
     case 1:
       return v.B;
     default:
@@ -47,7 +47,7 @@ func StringCast(v *variable) string {
 
   switch v.Type {
     case 0:
-      return strconv.Itoa(v.I);
+      return strconv.FormatFloat(float64(v.N), 'f', -1, 32);
     case 1:
       if v.B {
         return "true"
@@ -103,35 +103,35 @@ func (n operation2) Interpret() *variable {
   out := new(variable)
   switch(n.operator) {
     case '+':
-      out.SetNumberValue(left.I + right.I)
+      out.SetNumberValue(left.N + right.N)
     case '-':
-      out.SetNumberValue(left.I - right.I)
+      out.SetNumberValue(left.N - right.N)
     case '*':
-      out.SetNumberValue(left.I * right.I)
+      out.SetNumberValue(left.N * right.N)
     case '/':
-      out.SetNumberValue(left.I / right.I)
+      out.SetNumberValue(left.N / right.N)
     case COMP_EQU:
-      out.SetBoolValue(left.I == right.I)
+      out.SetBoolValue(left.N == right.N)
     case COMP_NEQU:
-      out.SetBoolValue(left.I != right.I)
+      out.SetBoolValue(left.N != right.N)
     case COMP_SEQU:
-      out.SetBoolValue(left.I == right.I)
+      out.SetBoolValue(left.N == right.N)
     case COMP_SNEQU:
-      out.SetBoolValue(left.I != right.I)
+      out.SetBoolValue(left.N != right.N)
     case COMP_LESS:
-      out.SetBoolValue(left.I < right.I)
+      out.SetBoolValue(left.N < right.N)
     case COMP_LTE:
-      out.SetBoolValue(left.I <= right.I)
+      out.SetBoolValue(left.N <= right.N)
     case COMP_GTR:
-      out.SetBoolValue(left.I > right.I)
+      out.SetBoolValue(left.N > right.N)
     case COMP_GTE:
-      out.SetBoolValue(left.I >= right.I)
+      out.SetBoolValue(left.N >= right.N)
     case BOOL_AND:
       out.SetBoolValue(left.B && right.B)
     case BOOL_OR:
       out.SetBoolValue(left.B || right.B)
     default:
-      out.SetNumberValue(left.I + right.I)
+      out.SetNumberValue(left.N + right.N)
   }
 
   return out
@@ -141,18 +141,7 @@ func (n operation2) AddChild(in node) { }
 
 func (n print) Interpret() *variable {
   val := n.in.Interpret()
-  switch val.Type {
-    case 0:
-      fmt.Println(val.I);
-    case 1:
-      if val.B {
-        fmt.Println("true");
-      } else {
-        fmt.Println("false");
-      }
-    default:
-      fmt.Println("Invalid type")
-  }
+  fmt.Println(StringCast(val))
   return nil
 }
 
@@ -171,7 +160,7 @@ func (n *block) AddChild(in node) {
 
 func (n *assign) Interpret() *variable {
   right := n.right.Interpret()
-  n.left.I = right.I
+  n.left.N = right.N
   return n.left
 }
 
