@@ -2,6 +2,8 @@
 /var/ { return VAR; }
 /if/ { return IF; }
 /while/ { return WHILE; }
+/for/ { return FOR; }
+/in/ { return IN; }
 /true/ { return TRUE; }
 /false/ { return FALSE; }
 /function/ { return FUNCTION; }

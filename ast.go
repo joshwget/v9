@@ -30,6 +30,7 @@ type assign struct {
 
 type var_usage struct {
   in *variable
+  name string
 }
 
 type if_node struct {
@@ -60,6 +61,12 @@ type get_prop struct {
   obj *variable
   string_prop string
   node_prop node
+}
+
+type for_in_node struct {
+  iterator *variable
+  source node
+  body node
 }
 
 func (n constant) Interpret() *variable {
@@ -131,26 +138,18 @@ func (n *block) AddChild(in node) {
 
 func (n *assign) Interpret() *variable {
   right := n.right.Interpret()
-  switch right.Type {
-    case 0:
-      n.left.SetNumberValue(right.N)
-    case 1:
-      n.left.SetBoolValue(right.B)
-    case 2:
-      n.left.SetFunctionValue(right.F)
-    case 3:
-      n.left.SetReferenceValue(right)
-    case 4:
-      n.left.SetReferenceValue(right.R)
-    case 5:
-      n.left.SetStringValue(right.S)
-  }
+  Assign(right, n.left)
   return n.left
 }
 
 func (n assign) AddChild(in node) { }
 
 func (n *var_usage) Interpret() *variable {
+  if n.name == "" {
+    return n.in
+  } else {
+    return vars[n.name]
+  }
   return n.in
 }
 
@@ -208,3 +207,16 @@ func (n *get_prop) Interpret() *variable {
 }
 
 func (n get_prop) AddChild(in node) { }
+
+func (n *for_in_node) Interpret() *variable {
+  source := n.source.Interpret()
+  for k, _ := range *source.GetProperties() {
+    key_variable := new(variable)
+    key_variable.SetStringValue(k)
+    Assign(key_variable, n.iterator)
+    n.body.Interpret()
+  }
+  return nil
+}
+
+func (n for_in_node) AddChild(in node) { }

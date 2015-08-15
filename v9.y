@@ -20,6 +20,8 @@ import "strconv"
 %token ID
 %token IF
 %token WHILE
+%token FOR
+%token IN
 %token TRUE
 %token FALSE
 %token FUNCTION
@@ -58,6 +60,7 @@ statement: exp ';'     { $$ = $1; }
          | prop_assign ';' { $$ = $1 }
          | if_statement { $$ = $1 }
          | while_statement { $$ = $1 }
+         | for_in_statement { $$ = $1 }
 ;
 
 var_declare: VAR ID '=' exp {
@@ -102,7 +105,7 @@ exp: NUM         { i, _ := strconv.ParseFloat($1.s, 32); $$.n = NumberConstant(f
    | exp BOOL_OR exp { $$.n = &operation2{ $1.n, $3.n, BOOL_OR }; }
 
    | '(' exp ')' { $$ = $2; }
-   | ID { $$.n = &var_usage{ vars[$1.s] }; }
+   | ID { $$.n = &var_usage{ name: $1.s }; }
    | FUNCTION '(' ')' '{' statement_list '}' { $$.n = &function_declare{ $5.n } }
    | ID '(' ')' { $$.n = &function_call{ vars[$1.s] } }
    | ID '.' ID { $$.n = &get_prop{ obj: vars[$1.s], string_prop: $3.s } }
@@ -114,5 +117,10 @@ command: PRINT '(' exp ')' { $$.n = &print{ $3.n } }
 
 if_statement: IF '(' exp ')' '{' statement_list '}' { $$.n = &if_node{ $3.n, $6.n } }
 while_statement: WHILE '(' exp ')' '{' statement_list '}' { $$.n = &while_node{ $3.n, $6.n } }
+for_in_statement: FOR '(' VAR ID IN exp ')' '{' statement_list '}' {
+                    v := new(variable)
+                    vars[$4.s] = v
+                    $$.n = &for_in_node{ v, $6.n, $9.n }
+                  }
 
 %%
