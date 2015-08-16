@@ -7,6 +7,8 @@
 /true/ { return TRUE; }
 /false/ { return FALSE; }
 /function/ { return FUNCTION; }
+/this/ { return THIS; }
+/new/ { return NEW; }
 
 /[_a-zA-Z][a-zA-Z0-9_]*/ { lval.s = yylex.Text(); return ID }
 /'(\\.|[^\\']+)*'|\"(\\.|[^\\"]+)*\"/ { lval.s = yylex.Text(); return STRING }

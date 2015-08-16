@@ -37,7 +37,14 @@ func (v *variable) SetStringValue(s string) {
   v.Type = 5;
 }
 
-func MakeEmptyObject() *constant {
+func MakeEmptyObject() *variable {
+  v := new(variable)
+  v.O = make(map[string]*variable)
+  v.Type = 3
+  return v
+}
+
+func MakeEmptyObjectNode() *constant {
   v := new(variable)
   v.O = make(map[string]*variable)
   v.Type = 3
@@ -163,3 +170,4 @@ func Assign(from *variable, to *variable) *variable {
 }
 
 var vars map[string]*variable
+var context *variable

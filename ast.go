@@ -53,6 +53,7 @@ type function_call struct {
 
 type set_prop struct {
   obj *variable
+  obj_node node
   prop string
   in node
 }
@@ -66,6 +67,12 @@ type get_prop struct {
 type for_in_node struct {
   iterator *variable
   source node
+  body node
+}
+
+type this_node struct { }
+
+type new_node struct {
   body node
 }
 
@@ -192,7 +199,12 @@ func (n function_call) AddChild(in node) { }
 
 func (n *set_prop) Interpret() *variable {
   val := n.in.Interpret()
-  n.obj.SetProp(n.prop, val)
+  if n.obj_node == nil {
+    n.obj.SetProp(n.prop, val)
+  } else {
+    obj := n.obj_node.Interpret()
+    obj.SetProp(n.prop, val)
+  }
   return nil
 }
 
@@ -220,3 +232,17 @@ func (n *for_in_node) Interpret() *variable {
 }
 
 func (n for_in_node) AddChild(in node) { }
+
+func (n *this_node) Interpret() *variable {
+  return context
+}
+
+func (n this_node) AddChild(in node) { }
+
+func (n *new_node) Interpret() *variable {
+  context = MakeEmptyObject()
+  n.body.Interpret()
+  return context
+}
+
+func (n new_node) AddChild(in node) { }

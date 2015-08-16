@@ -26,6 +26,8 @@ import "strconv"
 %token FALSE
 %token FUNCTION
 %token STRING
+%token THIS
+%token NEW
 
 %token COMP_EQU;
 %token COMP_NEQU;
@@ -78,20 +80,26 @@ var_assign: ID '=' exp {
 ;
 
 prop_assign: ID '.' ID '=' exp {
-               $$.n = &set_prop{ vars[$1.s], $3.s, $5.n };
+               $$.n = &set_prop{ obj: vars[$1.s], prop: $3.s, in: $5.n };
+             }
+          |  THIS '.' ID '=' exp {
+               $$.n = &set_prop{ obj_node: new(this_node), prop: $3.s, in: $5.n };
              }
 ;
+
+function_dec: FUNCTION '(' ')' '{' statement_list '}' { $$.n = &function_declare{ $5.n } }
+function_call_exp: ID '(' ')' { $$.n = &function_call{ vars[$1.s] } }
 
 exp: NUM         { i, _ := strconv.ParseFloat($1.s, 32); $$.n = NumberConstant(float32(i)); }
    | TRUE  { $$.n = TrueConstant() }
    | FALSE { $$.n = FalseConstant() }
    | STRING { $$.n = StringConstant($1.s[1:len($1.s) - 1]) }
-   | '{' '}' { $$.n = MakeEmptyObject() }
+   | '{' '}' { $$.n = MakeEmptyObjectNode() }
+   | THIS { $$.n = new(this_node) }
    | exp '+' exp { $$.n = &operation2{ $1.n, $3.n, '+' }; }
    | exp '-' exp { $$.n = &operation2{ $1.n, $3.n, '-' }; }
    | exp '*' exp { $$.n = &operation2{ $1.n, $3.n, '*' }; }
    | exp '/' exp { $$.n = &operation2{ $1.n, $3.n, '/' }; }
-
    | exp COMP_EQU exp { $$.n = &operation2{ $1.n, $3.n, COMP_EQU }; }
    | exp COMP_NEQU exp { $$.n = &operation2{ $1.n, $3.n, COMP_NEQU }; }
    | exp COMP_LESS exp { $$.n = &operation2{ $1.n, $3.n, COMP_LESS }; }
@@ -106,8 +114,9 @@ exp: NUM         { i, _ := strconv.ParseFloat($1.s, 32); $$.n = NumberConstant(f
 
    | '(' exp ')' { $$ = $2; }
    | ID { $$.n = &var_usage{ name: $1.s }; }
-   | FUNCTION '(' ')' '{' statement_list '}' { $$.n = &function_declare{ $5.n } }
-   | ID '(' ')' { $$.n = &function_call{ vars[$1.s] } }
+   | function_dec { $$ = $1 }
+   | function_call_exp { $$ = $1 }
+   | NEW function_call_exp { $$.n = &new_node{ $2.n } }
    | ID '.' ID { $$.n = &get_prop{ obj: vars[$1.s], string_prop: $3.s } }
    | ID '[' exp ']' { $$.n = &get_prop{ obj: vars[$1.s], node_prop: $3.n } }
 ;
