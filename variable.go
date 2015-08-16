@@ -110,15 +110,23 @@ func NumberConstant(n float32) *constant {
 }
 
 func TrueConstant() *constant {
-  v := new(variable)
-  v.SetBoolValue(true)
-  return &constant { v }
+  if true_constant == nil {
+    true_value := new(variable)
+    true_value.SetBoolValue(true)
+    true_constant = &constant{ true_value }
+  }
+
+  return true_constant
 }
 
 func FalseConstant() *constant {
-  v := new(variable)
-  v.SetBoolValue(false)
-  return &constant { v }
+  if false_constant == nil {
+    false_value := new(variable)
+    false_value.SetBoolValue(false)
+    false_constant = &constant{ false_value }
+  }
+
+  return false_constant
 }
 
 func StringConstant(s string) *constant {
@@ -183,3 +191,6 @@ func Assign(from *variable, to *variable) *variable {
 var vars map[string]*variable
 var context *variable
 var current_function_in_new *variable
+
+var true_constant *constant
+var false_constant *constant
