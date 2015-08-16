@@ -36,10 +36,12 @@ o.a = "a";
 o.aa = "aa";
 o.aaa = "aaa";
 
-for (var n in o) {
+var oo = o;
+
+for (var n in oo) {
   log(n);
   log(":");
-  log(o[n]);
+  log(oo[n]);
 }
 
 var F = function() {

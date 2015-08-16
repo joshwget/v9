@@ -2,12 +2,11 @@ package main
 import "strconv"
 
 type variable struct {
-  Type int
+  Type uint8
   N float32
   B bool
   F node
   O map[string]*variable
-  R *variable
   S string
 }
 
@@ -26,14 +25,14 @@ func (v *variable) SetFunctionValue(function_node node) {
   v.Type = 2;
 }
 
-func (v *variable) SetReferenceValue(other *variable) {
-  v.R = other;
+func (v *variable) SetStringValue(s string) {
+  v.S = s;
   v.Type = 4;
 }
 
-func (v *variable) SetStringValue(s string) {
-  v.S = s;
-  v.Type = 5;
+func (v *variable) SetObjectValue(o map[string]*variable) {
+  v.O = o;
+  v.Type = 3;
 }
 
 func MakeEmptyObject() *variable {
@@ -54,8 +53,6 @@ func (v *variable) GetProperties() *map[string]*variable {
   switch v.Type {
     case 3:
       return &v.O
-    case 4:
-      return &v.R.O
     default:
       return nil
   }
@@ -66,8 +63,6 @@ func (obj *variable) CreateProp(key string) *variable {
   switch obj.Type {
     case 2, 3:
       obj.O[key] = v
-    case 4:
-      obj.R.O[key] = v
   }
   return v
 }
@@ -80,18 +75,6 @@ func (obj *variable) GetProp(key string) *variable {
         return val
       } else {
         val, err := obj.O["prototype"]
-        if err {
-          return val.GetProp(key)
-        } else {
-          return nil
-        }
-      }
-    case 4:
-      val, err := obj.R.O[key]
-      if err {
-        return val
-      } else {
-        val, err := obj.R.O["prototype"]
         if err {
           return val.GetProp(key)
         } else {
@@ -141,7 +124,7 @@ func BoolCast(v *variable) bool {
       return v.N != 0;
     case 1:
       return v.B;
-    case 5:
+    case 4:
       return v.S != ""
     default:
       return false;
@@ -162,7 +145,7 @@ func StringCast(v *variable) string {
       } else {
         return "false"
       }
-    case 5:
+    case 4:
       return v.S
     default:
       return "bad type";
@@ -179,10 +162,8 @@ func Assign(from *variable, to *variable) *variable {
       to.SetFunctionValue(from.F)
       to.O = from.O
     case 3:
-      to.SetReferenceValue(from)
+      to.SetObjectValue(from.O)
     case 4:
-      to.SetReferenceValue(from.R)
-    case 5:
       to.SetStringValue(from.S)
   }
   return to
