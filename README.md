@@ -1,6 +1,6 @@
-# v9-go
+# v9
 
-Reimplementation of [v9](https://github.com/joshwget/v9), the successor to Google's v8, written in Go.
+JavaScript interpreter written in Go and self-proclaimed successor to Google's [v8](http://code.google.com/p/v8/).
 
 Created during [Hack the Planet](http://hacktheplanet.mlh.io/).
 
