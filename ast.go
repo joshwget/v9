@@ -49,14 +49,7 @@ type function_declare struct {
 }
 
 type function_call struct {
-  function_node *variable
-}
-
-type set_prop struct {
-  obj *variable
-  obj_node node
-  prop string
-  in node
+  function_node node
 }
 
 type create_prop struct {
@@ -200,31 +193,20 @@ func (n *function_declare) Interpret() *variable {
   out := new(variable)
   out.SetFunctionValue(n.body)
   out.O = make(map[string]*variable)
-  out.O["prototype"] = MakeEmptyObject()
+  out.O["prototype"] = MakeEmptyObject();
   return out
 }
 
 func (n function_declare) AddChild(in node) { }
 
 func (n *function_call) Interpret() *variable {
-  n.function_node.F.Interpret()
+  function_var := n.function_node.Interpret()
+  function := function_var.F
+  function.Interpret()
   return nil
 }
 
 func (n function_call) AddChild(in node) { }
-
-func (n *set_prop) Interpret() *variable {
-  val := n.in.Interpret()
-  if n.obj_node == nil {
-    n.obj.SetProp(n.prop, val)
-  } else {
-    obj := n.obj_node.Interpret()
-    obj.SetProp(n.prop, val)
-  }
-  return nil
-}
-
-func (n set_prop) AddChild(in node) { }
 
 func (n *create_prop) Interpret() *variable {
   obj := n.obj.Interpret()

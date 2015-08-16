@@ -61,15 +61,6 @@ func (v *variable) GetProperties() *map[string]*variable {
   }
 }
 
-func (obj *variable) SetProp(key string, val *variable) {
-  switch obj.Type {
-    case 3:
-      obj.O[key] = val
-    case 4:
-      obj.R.O[key] = val
-  }
-}
-
 func (obj *variable) CreateProp(key string) *variable {
   v := new(variable)
   switch obj.Type {
@@ -168,6 +159,7 @@ func Assign(from *variable, to *variable) *variable {
       to.SetBoolValue(from.B)
     case 2:
       to.SetFunctionValue(from.F)
+      to.O = from.O
     case 3:
       to.SetReferenceValue(from)
     case 4:
