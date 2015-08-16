@@ -1,4 +1,4 @@
-/console.log/ { return PRINT; }
+/log/ { return PRINT; }
 /var/ { return VAR; }
 /if/ { return IF; }
 /while/ { return WHILE; }

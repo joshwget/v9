@@ -8,9 +8,12 @@ import "strconv"
   s string
 }
 
+%right '='
+%left '.'
 %nonassoc COMP_EQU COMP_NEQU COMP_SEQU COMP_SNEQU
 %nonassoc COMP_LESS COMP_LTE COMP_GTR COMP_GTE
-%left '+' '-' '*' '/'
+%left '+' '-'
+%left '*' '/'
 %left BOOL_AND
 %left BOOL_OR
 
@@ -58,11 +61,13 @@ statement_list: { $$.n = &block{ make([]node, 0) }; }
 statement: exp ';'     { $$ = $1; }
          | command ';' { $$ = $1; }
          | var_declare ';' { $$ = $1; }
-         | var_assign ';' { $$ = $1 }
-         | prop_assign ';' { $$ = $1 }
          | if_statement { $$ = $1 }
          | while_statement { $$ = $1 }
          | for_in_statement { $$ = $1 }
+;
+
+var_usage: ID { $$.n = &var_usage{ name: $1.s }; }
+         | THIS { $$.n = new(this_node) }
 ;
 
 var_declare: VAR ID '=' exp {
@@ -70,21 +75,26 @@ var_declare: VAR ID '=' exp {
                  vars = make(map[string]*variable)
                }
                vars[$2.s] = new(variable)
-               $$.n = &assign{ vars[$2.s], $4.n };
+               $$.n = &assign{ left_var: vars[$2.s], right: $4.n };
              }
 ;
 
-var_assign: ID '=' exp {
-              $$.n = &assign{ vars[$1.s], $3.n };
-            }
+indexable: var_usage { $$ = $1 }
+         | indexable '[' exp ']' {
+             $$.n = &get_prop{ obj_node: $1.n, node_prop: $3.n }
+           }
+         | indexable '.' ID {
+             $$.n = &get_prop{ obj_node: $1.n, string_prop: $3.s }
+           }
 ;
 
-prop_assign: ID '.' ID '=' exp {
-               $$.n = &set_prop{ obj: vars[$1.s], prop: $3.s, in: $5.n };
-             }
-          |  THIS '.' ID '=' exp {
-               $$.n = &set_prop{ obj_node: new(this_node), prop: $3.s, in: $5.n };
-             }
+lhs_okay: var_usage { $$ = $1 }
+        | indexable '[' exp ']' {
+            $$.n = &create_prop{ obj: $1.n, node_prop: $3.n }
+          }
+        | indexable '.' ID {
+            $$.n = &create_prop{ obj: $1.n, string_prop: $3.s }
+          }
 ;
 
 function_dec: FUNCTION '(' ')' '{' statement_list '}' { $$.n = &function_declare{ $5.n } }
@@ -95,7 +105,6 @@ exp: NUM         { i, _ := strconv.ParseFloat($1.s, 32); $$.n = NumberConstant(f
    | FALSE { $$.n = FalseConstant() }
    | STRING { $$.n = StringConstant($1.s[1:len($1.s) - 1]) }
    | '{' '}' { $$.n = MakeEmptyObjectNode() }
-   | THIS { $$.n = new(this_node) }
    | exp '+' exp { $$.n = &operation2{ $1.n, $3.n, '+' }; }
    | exp '-' exp { $$.n = &operation2{ $1.n, $3.n, '-' }; }
    | exp '*' exp { $$.n = &operation2{ $1.n, $3.n, '*' }; }
@@ -113,12 +122,14 @@ exp: NUM         { i, _ := strconv.ParseFloat($1.s, 32); $$.n = NumberConstant(f
    | exp BOOL_OR exp { $$.n = &operation2{ $1.n, $3.n, BOOL_OR }; }
 
    | '(' exp ')' { $$ = $2; }
-   | ID { $$.n = &var_usage{ name: $1.s }; }
    | function_dec { $$ = $1 }
    | function_call_exp { $$ = $1 }
    | NEW function_call_exp { $$.n = &new_node{ $2.n } }
-   | ID '.' ID { $$.n = &get_prop{ obj: vars[$1.s], string_prop: $3.s } }
-   | ID '[' exp ']' { $$.n = &get_prop{ obj: vars[$1.s], node_prop: $3.n } }
+
+   | lhs_okay '=' exp {
+       $$.n = &assign{ left_node: $1.n, right: $3.n };
+     }
+   | indexable { $$ = $1 }
 ;
 
 command: PRINT '(' exp ')' { $$.n = &print{ $3.n } }

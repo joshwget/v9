@@ -1,6 +1,5 @@
 package main
 import "strconv"
-import "fmt"
 
 type variable struct {
   Type int
@@ -52,7 +51,6 @@ func MakeEmptyObjectNode() *constant {
 }
 
 func (v *variable) GetProperties() *map[string]*variable {
-  fmt.Println(v.Type)
   switch v.Type {
     case 3:
       return &v.O
@@ -72,9 +70,20 @@ func (obj *variable) SetProp(key string, val *variable) {
   }
 }
 
+func (obj *variable) CreateProp(key string) *variable {
+  v := new(variable)
+  switch obj.Type {
+    case 2, 3:
+      obj.O[key] = v
+    case 4:
+      obj.R.O[key] = v
+  }
+  return v
+}
+
 func (obj *variable) GetProp(key string) *variable {
   switch obj.Type {
-    case 3:
+    case 2, 3:
       val, err := obj.O[key]
       if err {
         return val

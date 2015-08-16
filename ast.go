@@ -24,7 +24,8 @@ type block struct {
 }
 
 type assign struct {
-  left *variable
+  left_var *variable
+  left_node node
   right node
 }
 
@@ -58,8 +59,15 @@ type set_prop struct {
   in node
 }
 
+type create_prop struct {
+  obj node
+  string_prop string
+  node_prop node
+}
+
 type get_prop struct {
   obj *variable
+  obj_node node
   string_prop string
   node_prop node
 }
@@ -145,8 +153,14 @@ func (n *block) AddChild(in node) {
 
 func (n *assign) Interpret() *variable {
   right := n.right.Interpret()
-  Assign(right, n.left)
-  return n.left
+  if n.left_node == nil {
+    Assign(right, n.left_var)
+    return n.left_var
+  } else {
+    left_var := n.left_node.Interpret()
+    Assign(right, left_var)
+    return left_var
+  }
 }
 
 func (n assign) AddChild(in node) { }
@@ -185,6 +199,8 @@ func (n while_node) AddChild(in node) { }
 func (n *function_declare) Interpret() *variable {
   out := new(variable)
   out.SetFunctionValue(n.body)
+  out.O = make(map[string]*variable)
+  out.O["prototype"] = MakeEmptyObject()
   return out
 }
 
@@ -210,11 +226,23 @@ func (n *set_prop) Interpret() *variable {
 
 func (n set_prop) AddChild(in node) { }
 
-func (n *get_prop) Interpret() *variable {
+func (n *create_prop) Interpret() *variable {
+  obj := n.obj.Interpret()
   if n.node_prop == nil {
-    return n.obj.GetProp(n.string_prop)
+    return obj.CreateProp(n.string_prop)
   } else {
-    return n.obj.GetProp(StringCast(n.node_prop.Interpret()))
+    return obj.CreateProp(StringCast(n.node_prop.Interpret()))
+  }
+}
+
+func (n create_prop) AddChild(in node) { }
+
+func (n *get_prop) Interpret() *variable {
+  obj := n.obj_node.Interpret()
+  if n.node_prop == nil {
+    return obj.GetProp(n.string_prop)
+  } else {
+    return obj.GetProp(StringCast(n.node_prop.Interpret()))
   }
 }
 
