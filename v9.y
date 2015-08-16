@@ -98,7 +98,11 @@ lhs_okay: var_usage { $$ = $1 }
 ;
 
 function_dec: FUNCTION '(' ')' '{' statement_list '}' { $$.n = &function_declare{ $5.n } }
-function_call_exp: indexable '(' ')' { $$.n = &function_call{ $1.n } }
+function_call_exp: indexable '(' ')' { $$.n = &function_call{ function_node: $1.n } }
+                 | indexable '.' ID '(' ')' {
+                     $$.n = &function_call{ caller: $1.n, function_node: &get_prop{ obj_node: $1.n, string_prop: $3.s } }
+                   }
+;
 
 exp: NUM         { i, _ := strconv.ParseFloat($1.s, 32); $$.n = NumberConstant(float32(i)); }
    | TRUE  { $$.n = TrueConstant() }

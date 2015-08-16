@@ -49,6 +49,7 @@ type function_declare struct {
 }
 
 type function_call struct {
+  caller node
   function_node node
 }
 
@@ -200,6 +201,11 @@ func (n *function_declare) Interpret() *variable {
 func (n function_declare) AddChild(in node) { }
 
 func (n *function_call) Interpret() *variable {
+  if n.caller != nil {
+    caller_var := n.caller.Interpret()
+    context = caller_var
+  }
+
   function_var := n.function_node.Interpret()
   function := function_var.F
   function.Interpret()
