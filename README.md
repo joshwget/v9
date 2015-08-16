@@ -15,7 +15,7 @@ This example will run as expected in v9, and roughly shows what was finished dur
 
     var i = 3;
     var j = 3;
-    while (i) {a
+    while (i) {
       j = 3;
       while (j) {
         log(j);
