@@ -203,6 +203,7 @@ func (n *function_call) Interpret() *variable {
   function_var := n.function_node.Interpret()
   function := function_var.F
   function.Interpret()
+  current_function_in_new = function_var
   return nil
 }
 
@@ -252,6 +253,9 @@ func (n this_node) AddChild(in node) { }
 func (n *new_node) Interpret() *variable {
   context = MakeEmptyObject()
   n.body.Interpret()
+  prototype := MakeEmptyObject()
+  prototype.O = current_function_in_new.O
+  context.O["prototype"] = prototype
   return context
 }
 

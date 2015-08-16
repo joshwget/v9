@@ -79,14 +79,24 @@ func (obj *variable) GetProp(key string) *variable {
       if err {
         return val
       } else {
-        return nil
+        val, err := obj.O["prototype"]
+        if err {
+          return val.GetProp(key)
+        } else {
+          return nil
+        }
       }
     case 4:
       val, err := obj.R.O[key]
       if err {
         return val
       } else {
-        return nil
+        val, err := obj.R.O["prototype"]
+        if err {
+          return val.GetProp(key)
+        } else {
+          return nil
+        }
       }
     default:
       return nil
@@ -172,3 +182,4 @@ func Assign(from *variable, to *variable) *variable {
 
 var vars map[string]*variable
 var context *variable
+var current_function_in_new *variable
